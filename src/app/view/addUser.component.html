@@ -1,0 +1,64 @@
+<main class="add-users">
+  <header class="header">
+    <h2>Add Members to Group</h2>
+    <div class="group-meta" *ngIf="group">
+      <div><strong>Group:</strong> {{ group.group_name }}</div>
+      <div><strong>Category:</strong> {{ group.category }}</div>
+      <div><strong>Description:</strong> {{ group.description }}</div>
+      <div><strong>Group ID:</strong> {{ groupId }}</div>
+    </div>
+  </header>
+
+  <section class="controls">
+    <label for="search">Search by email (case-sensitive):</label>
+    <input
+      id="search"
+      type="text"
+      [(ngModel)]="searchEmail"
+      placeholder="e.g. alice@example.com"
+      [disabled]="loading"
+    />
+  </section>
+
+  <section class="list">
+    <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+
+    <div *ngIf="!errorMsg && filteredCandidates.length === 0" class="empty">
+      <p>No users found to add for this filter.</p>
+      <button class="btn" (click)="searchEmail = ''" [disabled]="loading">Clear Filter</button>
+    </div>
+
+    <ul *ngIf="filteredCandidates.length > 0" class="user-list">
+      <li
+        *ngFor="let user of filteredCandidates; trackBy: trackByUserId"
+        class="user-row"
+      >
+        <label class="row-inner">
+          <input
+            type="checkbox"
+            [checked]="isSelected(user.user_id)"
+            (change)="toggleSelect(user.user_id)"
+            [disabled]="loading"
+          />
+          <div class="info">
+            <div class="name">{{ user.name || '(no name)' }}</div>
+            <div class="email">{{ user.email || '(no email)' }}</div>
+            <div class="uid">user_id: {{ user.user_id }}</div>
+          </div>
+        </label>
+      </li>
+    </ul>
+  </section>
+
+  <footer class="actions">
+    <button class="btn secondary" (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button
+      class="btn primary"
+      (click)="addSelected()"
+      [disabled]="loading || selectedIds.size === 0"
+      title="Select at least one user"
+    >
+      {{ loading ? 'Adding...' : 'Add Selected Users' }}
+    </button>
+  </footer>
+</main>

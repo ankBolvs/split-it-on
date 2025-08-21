@@ -1,0 +1,61 @@
+<main class="add-expense">
+  <h2>Add Expense</h2>
+
+  <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+    <!-- Description -->
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input
+        id="description"
+        type="text"
+        formControlName="description"
+        placeholder="Enter expense description"
+      />
+      <div *ngIf="expenseForm.get('description')?.invalid && expenseForm.get('description')?.touched" class="error">
+        Description is required (min 3 chars).
+      </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <input
+        id="amount"
+        type="number"
+        formControlName="amount"
+        placeholder="Enter amount"
+      />
+      <div *ngIf="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched" class="error">
+        Amount must be greater than 0.
+      </div>
+    </div>
+
+    <!-- Toggle -->
+    <div class="form-group toggle">
+      <label>Who is involved?</label>
+      <div>
+        <label>
+          <input type="radio" value="all" formControlName="toggle" /> All
+        </label>
+        <label>
+          <input type="radio" value="specify" formControlName="toggle" /> Specify
+        </label>
+      </div>
+    </div>
+
+    <!-- Checkbox group -->
+   <div *ngIf="expenseForm.get('toggle')?.value === 'specify'" class="form-group checkbox-group" formArrayName="users">
+  <label>Select members involved:</label>
+  <div *ngFor="let user of groupUsers; let i = index">
+    <input type="checkbox" [formControlName]="i" />
+    {{ user.name }} ({{ user.email }})
+  </div>
+</div>
+    <!-- Actions -->
+    <div class="actions">
+      <button type="button" (click)="cancel()">Cancel</button>
+      <button type="submit" [disabled]="expenseForm.invalid">Add Expense</button>
+
+    </div>
+  </form>
+</main>
