@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable, switchAll } from 'rxjs';
 import { User } from './user.model';
 import { Group } from './group.model';
@@ -10,6 +10,7 @@ const PORT = 3500;
 @Injectable()
 export class RestDataSource {
   private baseUrl: string;
+  auth_token?: string;
 
   constructor(private http: HttpClient) {
     this.baseUrl = `${PROTOCOL}://${location.hostname}:${PORT}/`;
@@ -60,9 +61,11 @@ export class RestDataSource {
   // return this.http.put<any>(`${this.baseUrl}groups/${group.id}`, group);
   // }
 
-  deleteGroup(id?: string): Observable<any> {
-    console.log('Delete request to:', `http://localhost:3500/groups/${id}`);
-    return this.http.delete(`${this.baseUrl}groups/${id}`);
+  deleteGroup(id: any): Observable<any> {
+    return this.http.delete<any>(
+      `${this.baseUrl}groups/${id}`,
+      this.getOptions()
+    );
   }
 
   getExpenses(): Observable<any[]> {
@@ -121,5 +124,61 @@ export class RestDataSource {
         }),
         switchAll()
       );
+  }
+
+  authenticate(user: string, pass: string): Observable<boolean> {
+    return this.http
+      .post<any>(this.baseUrl + 'login', {
+        name: user,
+        password: pass,
+        role: 'user',
+      })
+      .pipe(
+        map((response) => {
+          this.auth_token = response.success ? response.token : null;
+          console.log(response);
+          localStorage.setItem('user_token', response.token);
+          localStorage.setItem('user_name', user);
+          localStorage.setItem('refresh_token', response.refresh_token);
+          localStorage.setItem('user_id', response.id);
+
+          return response.success;
+        })
+      );
+  }
+
+  // authenticateAdmin
+  authenticateAdmin(user: string, pass: string): Observable<boolean> {
+    return this.http
+      .post<any>(this.baseUrl + 'login', {
+        name: user,
+        password: pass,
+        role: 'admin',
+      })
+      .pipe(
+        map((response) => {
+          this.auth_token = response.success ? response.token : null;
+          console.log(response);
+          localStorage.setItem('admin_token', response.token);
+          localStorage.setItem('admin_name', user);
+          localStorage.setItem('refresh_token', response.refresh_token);
+          return response.success;
+        })
+      );
+  }
+
+  deleteGroupByAdmin(id: any): Observable<any> {
+    return this.http.delete<any>(
+      `${this.baseUrl}groups/${id}`,
+      this.getOptions()
+    );
+  }
+
+  private getOptions() {
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer<${localStorage.getItem('admin_token')}>`,
+      }),
+    };
   }
 }

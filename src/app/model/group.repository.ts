@@ -10,12 +10,16 @@ export class GroupRepositroy {
   private usersData: User[] = [];
   public groupSubject = new BehaviorSubject<any>(null);
   private groupsData$ = new BehaviorSubject<Group[]>([]);
-private expensesData: { [groupId: string]: Expense[] } = {};
-private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {};
+  private expensesData: { [groupId: string]: Expense[] } = {};
+  private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } =
+    {};
+  private groupData: Group[] = [];
+
   constructor(private res: RestDataSource) {
     // load users once (non-blocking)
     this.res.getUsers().subscribe((data) => (this.usersData = data));
     // initial groups
+    this.res.getGroups().subscribe((data) => (this.groupData = data));
     this.loadGroups().subscribe();
   }
 
@@ -26,7 +30,9 @@ private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {}
 
   /** load groups from backend and update BehaviorSubject */
   loadGroups(): Observable<Group[]> {
-    return this.res.getGroups().pipe(tap((groups) => this.groupsData$.next(groups)));
+    return this.res
+      .getGroups()
+      .pipe(tap((groups) => this.groupsData$.next(groups)));
   }
 
   /** add a new group */
@@ -51,7 +57,7 @@ private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {}
   }
 
   /** get one group by group_id (from cache) */
-  getGroup(groupId: string): Group | undefined {
+  getGroup(groupId?: string): Group | undefined {
     return this.groupsData$.getValue().find((g) => g.group_id == groupId);
   }
 
@@ -61,7 +67,7 @@ private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {}
   }
 
   /** map members to user objects */
-  getGroupUsersData(groupId: string): User[] {
+  getGroupUsersData(groupId?: string): User[] {
     const group = this.getGroup(groupId);
     if (!group || !group.members) return [];
     return group.members
@@ -93,13 +99,13 @@ private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {}
   }
 
   /** convenience for adding members and saving (PUT) */
-  addMembersToGroup(groupId: string, userIds: string[]): Observable<Group> {
+  addMembersToGroup(userIds: string[], groupId?: string): Observable<Group> {
     const group = this.getGroup(groupId);
     const existing = new Set(group?.members ?? []);
     const merged = [...existing, ...userIds].map((x) => x); // unique
 
     const updatedGroup: Group = {
-      ...(group ?? { group_id: groupId } as Group),
+      ...(group ?? ({ group_id: groupId } as Group)),
       id: group?.id ?? groupId,
       members: merged,
       group_name: group?.group_name,
@@ -109,47 +115,79 @@ private expensesSubjects: { [groupId: string]: BehaviorSubject<Expense[]> } = {}
       expenses: group?.expenses ?? [],
     };
 
-    return this.updateGroup(groupId, updatedGroup);
+    if (groupId) {
+      return this.updateGroup(groupId, updatedGroup);
+    } else {
+      console.log('group undefined');
+      return new Observable<Group>();
+    }
   }
 
-  deleteGroup(groupId?: string): Observable<any> {
-    return this.res.deleteGroup(groupId);
+  getAdminGroups(): Group[] {
+    return this.groupData;
   }
-  getExpenses$(groupId: string): Observable<Expense[]> {
-  if (!this.expensesSubjects[groupId]) {
-    this.expensesSubjects[groupId] = new BehaviorSubject<Expense[]>([]);
-    this.refreshExpenses(groupId).subscribe();
-  }
-  return this.expensesSubjects[groupId].asObservable();
-}
 
-refreshExpenses(groupId: string): Observable<Expense[]> {
-  return this.res.getExpensesByGroup(Number(groupId)).pipe(
-    tap((expenses) => {
-      this.expensesData[groupId] = expenses;
-      if (this.expensesSubjects[groupId]) {
-        this.expensesSubjects[groupId].next(expenses);
+  deleteByAdminGroup(group: Group): void {
+    console.log(group.group_id);
+    this.res.deleteGroupByAdmin(group.group_id).subscribe(() => {
+      this.groupData = this.groupData.filter(
+        (o) => o.group_id !== group.group_id
+      );
+    });
+  }
+
+  deleteGroup(group: Group): void {
+    console.log(group.group_id);
+    this.res.deleteGroup(group.group_id).subscribe(() => {
+      // Filter out the deleted group from the current value of the BehaviorSubject
+      const updatedGroups = this.groupsData$
+        .getValue()
+        .filter((o) => o.group_id !== group.group_id);
+
+      // Update the BehaviorSubject with the new array
+      this.groupsData$.next(updatedGroups);
+    });
+  }
+
+  getExpenses$(groupId?: string): Observable<Expense[]> {
+    if (groupId) {
+      if (!this.expensesSubjects[groupId]) {
+        this.expensesSubjects[groupId] = new BehaviorSubject<Expense[]>([]);
+        this.refreshExpenses(groupId).subscribe();
       }
-    })
-  );
-}
-
-addExpense(expense: Expense): Observable<Expense> {
-  // ✅ ensure it has a unique id before sending to json-server
-  if (!expense.id) {
-    expense.id = Date.now().toString();
+      return this.expensesSubjects[groupId].asObservable();
+    } else {
+      console.log('group undefined');
+      return new Observable<Expense[]>();
+    }
   }
 
-  return this.res.addExpense(expense).pipe(
-    tap((created) => {
-      const gid = created.group_id!;
-      if (!this.expensesData[gid]) this.expensesData[gid] = [];
-      this.expensesData[gid].push(created);
-      if (this.expensesSubjects[gid]) {
-        this.expensesSubjects[gid].next([...this.expensesData[gid]]);
-      }
-    })
-  );
-}
+  refreshExpenses(groupId: string): Observable<Expense[]> {
+    return this.res.getExpensesByGroup(Number(groupId)).pipe(
+      tap((expenses) => {
+        this.expensesData[groupId] = expenses;
+        if (this.expensesSubjects[groupId]) {
+          this.expensesSubjects[groupId].next(expenses);
+        }
+      })
+    );
+  }
 
+  addExpense(expense: Expense): Observable<Expense> {
+    // ✅ ensure it has a unique id before sending to json-server
+    if (!expense.id) {
+      expense.id = Date.now().toString();
+    }
+
+    return this.res.addExpense(expense).pipe(
+      tap((created) => {
+        const gid = created.group_id!;
+        if (!this.expensesData[gid]) this.expensesData[gid] = [];
+        this.expensesData[gid].push(created);
+        if (this.expensesSubjects[gid]) {
+          this.expensesSubjects[gid].next([...this.expensesData[gid]]);
+        }
+      })
+    );
+  }
 }

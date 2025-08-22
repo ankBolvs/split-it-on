@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="showGroups.component.css" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -36,43 +35,31 @@
           <a href="">Home</a>
           <a href="">About</a>
           <a href="">Contact</a>
+          <a (click)="logout()" href="">Logout</a>
         </nav>
       </header>
       <section class="greet">
         <h1>Welcome {{ userName }}</h1>
       </section>
       <section class="groups">
+        <!-- if groups exist -->
         <div class="card" *ngFor="let group of groups">
           <div class="card-header">{{ group.category }}</div>
           <div class="card-body">
             <h5 class="card-title">{{ group.group_name }}</h5>
-            <p class="card-text">
-              {{ group.description }}
-            </p>
+            <p class="card-text">{{ group.description }}</p>
             <a
               href="#"
-              class="btn btn-warning"
-              (click)="setGroupId(group.group_id)"
-              routerLink="/group"
-              >Details</a
+              class="btn btn-danger"
+              (click)="deleteGroupButton($event, group)"
+              >Delete</a
             >
           </div>
         </div>
 
-        <div class="card">
-          <div
-            class="card-body"
-            [routerLink]="['/create-group']"
-            style="cursor: pointer"
-          >
-            <span
-              class="material-symbols-outlined"
-              style="align-items: center; color: #ffbf00"
-            >
-              add
-            </span>
-            <h5>Add new Group</h5>
-          </div>
+        <!-- if no groups -->
+        <div *ngIf="groups.length === 0" class="no-groups">
+          No groups are there
         </div>
       </section>
     </main>

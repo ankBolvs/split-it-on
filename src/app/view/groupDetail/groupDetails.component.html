@@ -11,6 +11,7 @@
   </head>
   <body>
     <main>
+      <button routerLink="/show-groups">All Groups</button>
       <section>
         <!-- Group Info -->
         <h3>Group Name: {{ groupDetail?.group_name }}</h3>
@@ -65,11 +66,7 @@
           <button
             type="button"
             class="btn btn-outline-warning"
-            [routerLink]="[
-              '/group-details',
-              groupDetail?.group_id,
-              'addExpense'
-            ]"
+            routerLink="/group/parent-group-details/addExpense"
           >
             Add Expense
           </button>
@@ -78,9 +75,9 @@
           <button
             type="button"
             class="btn btn-dark"
-            [routerLink]="['/group-details', groupDetail?.id, 'addUsers']"
-            [queryParams]="{ groupId: groupDetail?.group_id }"
+            routerLink="/group/parent-group-details/addUsers"
           >
+            <!-- [queryParams]="{ groupId: groupDetail?.group_id }" -->
             Add Members
           </button>
           <button type="button" class="btn btn-dark" *ngIf="enableDelete">

@@ -25,7 +25,9 @@
 
     <div *ngIf="!errorMsg && filteredCandidates.length === 0" class="empty">
       <p>No users found to add for this filter.</p>
-      <button class="btn" (click)="searchEmail = ''" [disabled]="loading">Clear Filter</button>
+      <button class="btn" (click)="searchEmail = ''" [disabled]="loading">
+        Clear Filter
+      </button>
     </div>
 
     <ul *ngIf="filteredCandidates.length > 0" class="user-list">
@@ -41,8 +43,8 @@
             [disabled]="loading"
           />
           <div class="info">
-            <div class="name">{{ user.name || '(no name)' }}</div>
-            <div class="email">{{ user.email || '(no email)' }}</div>
+            <div class="name">{{ user.name || "(no name)" }}</div>
+            <div class="email">{{ user.email || "(no email)" }}</div>
             <div class="uid">user_id: {{ user.user_id }}</div>
           </div>
         </label>
@@ -51,14 +53,16 @@
   </section>
 
   <footer class="actions">
-    <button class="btn secondary" (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button class="btn secondary" (click)="cancel()" [disabled]="loading">
+      Cancel
+    </button>
     <button
       class="btn primary"
       (click)="addSelected()"
       [disabled]="loading || selectedIds.size === 0"
       title="Select at least one user"
     >
-      {{ loading ? 'Adding...' : 'Add Selected Users' }}
+      {{ loading ? "Adding..." : "Add Selected Users" }}
     </button>
   </footer>
 </main>

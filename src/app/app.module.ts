@@ -1,5 +1,5 @@
 import { RestDataSource } from './model/restDatasource';
-import { GroupDetailComponent } from './view/groupDetails.component';
+import { GroupDetailComponent } from './view/groupDetail/groupDetails.component';
 import { ShowGroupsComponent } from './view/showGroups.component';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -13,15 +13,16 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { GroupRepositroy } from './model/group.repository';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
-import { AddExpenseComponent } from './view/addExpense.component';
 import { CreateGroupComponent } from './view/createGroups.component';
-import { AddUserComponent } from './view/addUser.component';
+import { ShowGroupGuard } from './showGroupGuard';
+import { ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [AppComponent, LoginComponent],
   imports: [
     HttpClientModule,
     BrowserModule,
     ViewModule,
+    ReactiveFormsModule,
     AngularFireAuthModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
 
@@ -33,35 +34,35 @@ import { AddUserComponent } from './view/addUser.component';
       {
         path: 'create-group',
         component: CreateGroupComponent,
+        canActivate: [ShowGroupGuard],
       },
-      {
-        path: 'group-details',
-        component: GroupDetailComponent,
-      },
-      {
-        path: 'group-details/:id',
-        component: GroupDetailComponent,
-      },
-      {
-        path: 'group/:id/:name',
-        component: ShowGroupsComponent,
-      },
-      { path: 'group-details/:id/addExpense', component: AddExpenseComponent },
 
       {
         path: 'show-groups',
         component: ShowGroupsComponent,
+        canActivate: [ShowGroupGuard],
       },
-      { path: 'group-details/:id/addExpense', component: AddExpenseComponent },
 
-     {path: 'group-details/:id/addUsers', component: AddUserComponent},
+      {
+        path: 'group',
+        loadChildren: () =>
+          //used to lazy load an angular module
+          import('./view/groupDetail/groupDetail.module').then(
+            (m) => m.GroupDetailModule
+          ),
+      },
+      {
+        path: 'admin',
+        loadChildren: () =>
+          import('./admin/admin.module').then((m) => m.AdminModule),
+      },
       {
         path: '**',
         redirectTo: '/login',
       },
     ]),
   ],
-  providers: [HttpClient],
+  providers: [HttpClient, ShowGroupGuard],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

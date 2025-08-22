@@ -7,10 +7,11 @@ import {
   FormArray,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupRepositroy } from '../model/group.repository';
-import { UserService } from '../services/user.service';
-import { Expense } from '../model/expense.model';
-import { User } from '../model/user.model';
+import { GroupRepositroy } from '../../model/group.repository';
+import { UserService } from '../../services/user.service';
+import { Expense } from '../../model/expense.model';
+import { User } from '../../model/user.model';
+import { GroupDataService } from '../../services/groupdata.service';
 
 @Component({
   selector: 'add-expense',
@@ -19,9 +20,9 @@ import { User } from '../model/user.model';
 })
 export class AddExpenseComponent implements OnInit {
   expenseForm!: FormGroup;
-  groupId!: string;
+  groupId?: string;
   groupUsers: User[] = [];
-  currentUserId!: string;
+  currentUserId: string = '';
 
   // UI state
   loading = false;
@@ -32,15 +33,14 @@ export class AddExpenseComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private groupRepo: GroupRepositroy,
-    private userService: UserService
+    private userService: UserService,
+    private groupDetail: GroupDataService
   ) {}
 
   ngOnInit(): void {
     // group id from param or query
-    this.groupId =
-      this.route.snapshot.paramMap.get('id') ||
-      this.route.snapshot.queryParamMap.get('groupId') ||
-      '';
+    this.groupId = this.groupDetail.getGroupId();
+
     this.currentUserId = this.userService.getUserId();
 
     // load group members from repo cache
@@ -69,6 +69,7 @@ export class AddExpenseComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log('group id on submit ' + this.groupId);
     if (this.expenseForm.invalid) return;
 
     this.loading = true;
@@ -84,7 +85,7 @@ export class AddExpenseComponent implements OnInit {
     }
 
     const newExpense: Expense = {
-       id: Date.now().toString(),   
+      id: Date.now().toString(),
       description: formValue.description,
       amount: formValue.amount,
       paid_by: this.currentUserId,
@@ -96,7 +97,7 @@ export class AddExpenseComponent implements OnInit {
     this.groupRepo.addExpense(newExpense).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/group-details', this.groupId]);
+        this.router.navigate(['/group/parent-group-details/group-details']);
       },
       error: (err) => {
         console.error('Failed to add expense:', err);
@@ -107,6 +108,6 @@ export class AddExpenseComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/group-details', this.groupId]);
+    this.router.navigate(['/group/parent-group-details/group-details']);
   }
 }

@@ -1,0 +1,68 @@
+<div class="container">
+  <form [formGroup]="authenticationData">
+    <div class="header-container">
+      <h1>Admin Authentication</h1>
+    </div>
+    <div class="admin_name">
+      <div class="admin_name-l">
+        <label>Name</label>
+      </div>
+      <input
+        class="admin_name-input"
+        type="text"
+        name="admin_name"
+        placeholder="E.g, Sairaj Rajput"
+        formControlName="admin_name"
+      />
+    </div>
+    <div
+      *ngIf="submittedForm && authenticationData.get('admin_name')?.invalid"
+      class="custom-error"
+    >
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['required']">
+        Admin name is required.
+      </div>
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['minlength']">
+        Admin Name must be at least 3 characters long.
+      </div>
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['maxlength']">
+        Admin Name cannot exceed 50 characters.
+      </div>
+
+      <div
+        *ngIf="authenticationData.get('admin_name')?.hasError('specialChar')"
+      >
+        Admin name must contain no specials.
+      </div>
+    </div>
+
+    <div class="password">
+      <div class="password-l">
+        <label>Password</label>
+      </div>
+      <input
+        class="password-input"
+        type="password"
+        name="password"
+        placeholder="E.g, 2b68bba3d016"
+        formControlName="password"
+      />
+    </div>
+
+    <div
+      *ngIf="submittedForm && authenticationData.get('admin_name')?.invalid"
+      class="custom-error"
+    >
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['required']">
+        Password is required.
+      </div>
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['minlength']">
+        Password must be at least 3 characters long.
+      </div>
+      <div *ngIf="authenticationData.get('admin_name')?.errors?.['maxlength']">
+        Password cannot exceed 50 characters.
+      </div>
+    </div>
+    <button [disabled]="" (click)="submitForm()">Authenticate</button>
+  </form>
+</div>

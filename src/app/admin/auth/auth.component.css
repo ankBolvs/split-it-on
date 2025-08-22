@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Libertinus+Sans:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap");
+
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  height: 100vh;
+  width: 100vw;
+  font-family: "Libertinus Sans", sans-serif;
+  margin: 0;
+}
+
+/* --- Form and Container Styling --- */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.container form {
+  /* Remove all padding and margin from the form itself */
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  width: 30%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden; /* Ensures the header's top corners are rounded */
+}
+
+/* --- Header Styling --- */
+.header-container {
+  /* Ensure the header container has no margin or padding */
+  width: 100%;
+  background-color: #fff8e1;
+  padding: 15px 0;
+}
+
+.header-container h1 {
+  /* Ensure the h1 has no margin */
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  color: #ffbf00;
+  border-bottom: 1px solid #eee;
+}
+
+/* --- Content Styling --- */
+.form-content {
+  /* Apply padding to the content inside the form */
+  padding: 28px;
+}
+
+.description,
+.admin_name,
+.password {
+  position: relative;
+  margin-bottom: 1rem;
+  margin: 10px;
+}
+
+/* --- Input and Label Styling --- */
+.admin_name-l,
+.password-l {
+  line-height: 26px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.container form input {
+  font-size: 16px !important;
+  border: 2px solid #ccc;
+  background-color: #f8f8f8;
+  padding: 10px 14px;
+  font-family: "Libertinus Sans", sans-serif;
+  width: 90%;
+  border-radius: 6px;
+}
+
+/* --- Button Styling --- */
+.container form button {
+  margin-top: 16px;
+  color: #000;
+  background-color: #ffbf00;
+  font-size: 18px;
+  margin: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Libertinus Sans", sans-serif;
+  font-size: 1.1rem;
+  padding: 1rem;
+  border: none;
+}
+
+.button .button:hover {
+  transform: translateY(-2px);
+}
+
+.custom-error {
+  font-size: 15px;
+  color: red;
+  margin-top: 5px;
+  margin-left: 20px;
+}

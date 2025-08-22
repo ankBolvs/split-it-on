@@ -1,5 +1,43 @@
 module.exports = function () {
   return {
+    users: [
+      {
+        id: "1",
+        name: "Harshita",
+        password: "secret",
+        role: "user",
+      },
+      {
+        id: "2",
+        name: "Rohan",
+        password: "chococake",
+        role: "user",
+      },
+      {
+        id: "3",
+        name: "Sneha",
+        password: "ankur",
+        role: "user",
+      },
+      {
+        id: "4",
+        name: "Arjun",
+        password: "yash",
+        role: "user",
+      },
+      {
+        id: "5",
+        name: "Priya",
+        password: "chitosh",
+        role: "user",
+      },
+      {
+        id: "6",
+        name: "ajay",
+        password: "ajay",
+        role: "admin",
+      },
+    ],
     user: [
       {
         id: "1",

@@ -53,7 +53,8 @@ export class CreateGroupComponent implements OnInit {
 
     if (this.createGroup.valid) {
       const formValues = this.createGroup.value;
-      const userId = this.userDetails.getUserId();
+      let userId: string = '';
+      userId = this.userDetails.getUserId();
 
       const newGroup: Group = {
         group_name: formValues.group_name,

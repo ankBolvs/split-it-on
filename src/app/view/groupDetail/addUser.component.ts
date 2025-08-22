@@ -1,10 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupRepositroy } from '../model/group.repository';
-import { UserRepository } from '../model/user.repository';
-import { Group } from '../model/group.model';
-import { User } from '../model/user.model';
-import { forkJoin, map, Observable, of, Subscription, switchMap, tap } from 'rxjs';
+import {
+  forkJoin,
+  map,
+  Observable,
+  of,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
+import { UserRepository } from '../../model/user.repository';
+import { Group } from '../../model/group.model';
+import { GroupRepositroy } from '../../model/group.repository';
+import { User } from '../../model/user.model';
+import { GroupDataService } from '../../services/groupdata.service';
 
 @Component({
   selector: 'add-user',
@@ -13,7 +22,7 @@ import { forkJoin, map, Observable, of, Subscription, switchMap, tap } from 'rxj
 })
 export class AddUserComponent implements OnInit, OnDestroy {
   // route
-  groupId!: string;
+  groupId?: string;
 
   // data
   group?: Group;
@@ -31,41 +40,42 @@ export class AddUserComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private groupRepo: GroupRepositroy,
-    private userRepo: UserRepository
+    private userRepo: UserRepository,
+    private groupDetail: GroupDataService
   ) {}
-ngOnInit(): void {
-  // group id can come either as path param (:id) or as query (?groupId=)
-  this.groupId =
-    this.route.snapshot.queryParamMap.get('groupId') ||
-    this.route.snapshot.paramMap.get('id') ||
-    '';
+  ngOnInit(): void {
+    // group id can come either as path param (:id) or as query (?groupId=)
+    this.groupId = this.groupDetail.getGroupId();
 
-  this.sub = this.groupRepo.loadGroups().pipe(
-    map(() => this.groupRepo.getGroup(this.groupId)),
-    switchMap((grp) => {
-      if (!grp) {
-        this.group = undefined;
-        return of([] as User[]); // ✅ always return User[]
-      }
-      this.group = grp;
-      return this.userRepo.getAllUsers$(); // ✅ also User[]
-    }),
-    tap((users: User[]) => {
-      if (!this.group) return;
-      this.allUsers = users;
-      const members = new Set(this.group.members ?? []);
-      // Only those not already in this group
-      this.candidates = this.allUsers.filter(
-        (u) => u.user_id && !members.has(u.user_id)
-      );
-    })
-  ).subscribe({
-    error: (err) => {
-      console.error(err);
-      this.errorMsg = 'Failed to load data.';
-    },
-  });
-}
+    this.sub = this.groupRepo
+      .loadGroups()
+      .pipe(
+        map(() => this.groupRepo.getGroup(this.groupId)),
+        switchMap((grp) => {
+          if (!grp) {
+            this.group = undefined;
+            return of([] as User[]); // ✅ always return User[]
+          }
+          this.group = grp;
+          return this.userRepo.getAllUsers$(); // ✅ also User[]
+        }),
+        tap((users: User[]) => {
+          if (!this.group) return;
+          this.allUsers = users;
+          const members = new Set(this.group.members ?? []);
+          // Only those not already in this group
+          this.candidates = this.allUsers.filter(
+            (u) => u.user_id && !members.has(u.user_id)
+          );
+        })
+      )
+      .subscribe({
+        error: (err) => {
+          console.error(err);
+          this.errorMsg = 'Failed to load data.';
+        },
+      });
+  }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
@@ -74,7 +84,9 @@ ngOnInit(): void {
   // case-sensitive contains on email
   get filteredCandidates(): User[] {
     if (!this.searchEmail) return this.candidates;
-    return this.candidates.filter((u) => (u.email ?? '').includes(this.searchEmail));
+    return this.candidates.filter((u) =>
+      (u.email ?? '').includes(this.searchEmail)
+    );
   }
 
   // checkbox change
@@ -99,7 +111,7 @@ ngOnInit(): void {
 
     // 1) Update group.members via PUT
     this.groupRepo
-      .addMembersToGroup(this.groupId, memberIdsToAdd)
+      .addMembersToGroup(memberIdsToAdd, this.groupId)
       .pipe(
         // 2) Update each user's userGroups (PUT per user)
         switchMap((updatedGroup) => {
@@ -111,8 +123,12 @@ ngOnInit(): void {
 
             if (!user.userGroups) user.userGroups = [];
             // avoid duplicates
-            if (!user.userGroups.includes(this.groupId)) {
-              user.userGroups = [...user.userGroups, this.groupId];
+            if (this.groupId) {
+              if (!user.userGroups.includes(this.groupId)) {
+                user.userGroups = [...user.userGroups, this.groupId];
+              }
+            } else {
+              console.log('group undefined');
             }
 
             updates.push(this.userRepo.updateUserGroups(user));
@@ -123,7 +139,9 @@ ngOnInit(): void {
         tap(() => {
           this.loading = false;
           // Navigate back to group details by group_id (route expects :id to be group_id)
-          this.router.navigate(['/group-details', this.groupId]);
+          this.router.navigateByUrl(
+            '/group/parent-group-details/group-details'
+          );
         })
       )
       .subscribe({

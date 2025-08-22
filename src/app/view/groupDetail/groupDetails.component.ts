@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { GroupRepositroy } from '../model/group.repository';
-import { Group } from '../model/group.model';
-import { User } from '../model/user.model';
-import { Expense } from '../model/expense.model';
-import { UserService } from '../services/user.service';
+import { GroupRepositroy } from '../../model/group.repository';
+import { Group } from '../../model/group.model';
+import { User } from '../../model/user.model';
+import { Expense } from '../../model/expense.model';
+import { UserService } from '../../services/user.service';
+import { GroupDataService } from '../../services/groupdata.service';
 
 @Component({
   selector: 'group-details',
@@ -12,8 +13,9 @@ import { UserService } from '../services/user.service';
   styleUrl: 'groupDetails.component.css',
 })
 export class GroupDetailComponent implements OnInit {
+  enableGroupDetail = true;
   group?: Group;
-  groupId!: string;
+  groupId?: string;
   groupMembers: User[] = [];
   balances: { [userId: string]: number } = {};
   currentUserId: string = '';
@@ -23,9 +25,11 @@ export class GroupDetailComponent implements OnInit {
   constructor(
     private groupRepo: GroupRepositroy,
     private activeRoute: ActivatedRoute,
-    private userService: UserService
+    private userService: UserService,
+    private groupService: GroupDataService
   ) {
-    this.groupId = activeRoute.snapshot.params['id'];
+    // this.groupId = activeRoute.snapshot.params['id'];
+    this.groupId = this.groupService.getGroupId();
     this.currentUserId = this.userService.getUserId(); // ✅ logged-in user
   }
 
