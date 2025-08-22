@@ -4,31 +4,31 @@ module.exports = function () {
       {
         id: "1",
         name: "Harshita",
-        password: "secret",
+        password: "harshita",
         role: "user",
       },
       {
         id: "2",
         name: "Rohan",
-        password: "chococake",
+        password: "rohan",
         role: "user",
       },
       {
         id: "3",
         name: "Sneha",
-        password: "ankur",
+        password: "sneha",
         role: "user",
       },
       {
         id: "4",
         name: "Arjun",
-        password: "yash",
+        password: "arjun",
         role: "user",
       },
       {
         id: "5",
         name: "Priya",
-        password: "chitosh",
+        password: "priya",
         role: "user",
       },
       {
